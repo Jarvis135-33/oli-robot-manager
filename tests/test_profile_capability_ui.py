@@ -81,17 +81,17 @@ def test_switching_from_l04_to_oli_restores_existing_commands(qtbot):
     ):
         button = panel._tool_buttons[button_key]
         assert button.isEnabled()
-        assert "å°šæœªå¼€æ”¾" not in button.toolTip()
+        assert "尚未开放" not in button.toolTip()
 
     for button_key in ("sit_down", "lie_down", "straight_walk"):
         button = panel._tool_buttons[button_key]
         assert not button.isEnabled()
-        assert "åŠè£…ä¿æŠ¤" in button.toolTip()
+        assert "吊装保护" in button.toolTip()
 
     for button_key in ("damping", "zero_torque"):
         button = panel._tool_buttons[button_key]
         assert not button.isEnabled()
-        assert "éœ€å…ˆå‹¾é€‰" in button.toolTip()
+        assert "需先勾选" in button.toolTip()
 
     panel._tool_buttons["prepare"].click()
     assert actions == [("prepare", {})]
@@ -110,7 +110,7 @@ def test_clearing_profile_locks_all_control_commands(qtbot):
 
     assert all(not button.isEnabled() for button in panel._tool_buttons.values())
     assert all(
-        "å°šæœªå¼€æ”¾" in button.toolTip()
+        "尚未开放" in button.toolTip()
         for button in panel._tool_buttons.values()
     )
 
@@ -123,8 +123,8 @@ def test_l04_dance_library_allows_single_actions_only_in_walk(qtbot, monkeypatch
     qtbot.addWidget(panel)
 
     panel.apply_profile(L04_PROFILE)
-    panel._populate_dances([{"rc_mapping": "wakawaka", "name": "å“‡å¡å“‡å¡"}])
-    panel._populate_motions([{"motion_name_en": "wave", "motion_name_cn": "æŒ¥æ‰‹"}])
+    panel._populate_dances([{"rc_mapping": "wakawaka", "name": "哇卡哇卡"}])
+    panel._populate_motions([{"motion_name_en": "wave", "motion_name_cn": "挥手"}])
 
     assert panel.refresh_dances_btn.isEnabled()
     assert panel.refresh_motions_btn.isEnabled()
@@ -157,8 +157,8 @@ def test_l04_action_confirmation_blocks_non_walk_and_can_approve_walk(
         lambda *_args: warnings.append(_args[2]),
     )
 
-    assert panel._confirm_luna_action("åŽŸå­åŠ¨ä½œ", "Nod") is False
-    assert "ä»…å…è®¸åœ¨ Walk çŠ¶æ€æ‰§è¡Œ" in warnings[-1]
+    assert panel._confirm_luna_action("原子动作", "Nod") is False
+    assert "仅允许在 Walk 状态执行" in warnings[-1]
 
     panel.update_robot_status({"robot_status": "Walk"})
     monkeypatch.setattr(
@@ -167,7 +167,7 @@ def test_l04_action_confirmation_blocks_non_walk_and_can_approve_walk(
         lambda _self: QMessageBox.StandardButton.Yes,
     )
 
-    assert panel._confirm_luna_action("åŽŸå­åŠ¨ä½œ", "Nod") is True
+    assert panel._confirm_luna_action("原子动作", "Nod") is True
 
 
 def test_l04_calibration_panel_is_locked(qtbot):
@@ -180,4 +180,4 @@ def test_l04_calibration_panel_is_locked(qtbot):
 
     assert not panel.ws_calibrate_btn.isEnabled()
     assert not panel.bl_connect_btn.isEnabled()
-    assert "å°šæœªå®ŒæˆçœŸæœºéªŒè¯" in panel.result_log.toPlainText()
+    assert "尚未完成真机验证" in panel.result_log.toPlainText()
