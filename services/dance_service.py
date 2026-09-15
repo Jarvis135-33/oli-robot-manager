@@ -55,6 +55,7 @@ class DanceService(QObject):
     motion_list_loaded = pyqtSignal(list)              # [{motion_index, motion_name_cn, motion_name_en}, ...]
     dance_executed = pyqtSignal(str, int)              # name, new_count
     motion_executed = pyqtSignal(str, int)             # name, new_count
+    count_reset = pyqtSignal(str, str, int)            # name, category, new_count
     dance_target_completed = pyqtSignal(str, int, str)  # name, count, robot_accid
     sequence_step_executed = pyqtSignal(int, int)      # step_index, total_steps
     sequence_finished = pyqtSignal(str)                # sequence_name
@@ -231,6 +232,13 @@ class DanceService(QObject):
         new_count = self._count_repo.increment(robot_accid, name, category)
         self._counts[(robot_accid, name)] = new_count
         return new_count
+
+    def reset_count(self, name: str, category: str) -> int:
+        robot_accid = ROBOT_CONFIG.ws_accid
+        self._count_repo.reset(robot_accid, name)
+        self._counts[(robot_accid, name)] = 0
+        self.count_reset.emit(name, category, 0)
+        return 0
 
     def load_all_counts(self):
         for row in self._count_repo.get_all_counts():
