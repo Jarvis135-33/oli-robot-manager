@@ -1,4 +1,4 @@
-"""Dance & motion library â€” tabbed, compact layout."""
+"""Dance & motion library — tabbed, compact layout."""
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
     QScrollArea, QSlider, QTabWidget, QGridLayout, QFrame, QMessageBox,
@@ -12,24 +12,24 @@ from ui.dialogs.message_dialog import AppMessageBox
 
 
 DANCE_DISPLAY_ORDER = [
-    ("èƒœåˆ©ä¹‹èˆž",),
-    ("çƒ­çƒˆ",),
-    ("ä½Žä¿—å°è¯´",),
-    ("é¡ºé£Žé¡ºæ°´é¡ºè´¢ç¥ž",),
-    ("ä¸‡ç‰©ç”Ÿ",),
-    ("æœºæ¢°èˆž",),
-    ("ç›¸äº²ç›¸çˆ±",),
+    ("胜利之舞",),
+    ("热烈",),
+    ("低俗小说",),
+    ("顺风顺水顺财神",),
+    ("万物生",),
+    ("机械舞",),
+    ("相亲相爱",),
     ("APT",),
-    ("æ‰­èƒ¯èˆž", "abracadabræ‰­èƒ¯èˆž"),
-    ("å¡æ‹‰æ°¸è¿œok", "å¡æ‹‰æ°¸è¿œOK"),
-    ("æ¥ä¸ªè¹¦è¹¦",),
+    ("扭胯舞", "abracadabr扭胯舞"),
+    ("卡拉永远ok", "卡拉永远OK"),
+    ("来个蹦蹦",),
     ("gentleman",),
-    ("ç®¡ä»–ä»€ä¹ˆéŸ³ä¹",),
-    ("å­¤èº«æ‘‡",),
+    ("管他什么音乐",),
+    ("孤身摇",),
 ]
 
 UNRELIABLE_MOTIONS = {
-    "raise_and_introduce": "è¯¥åŠ¨ä½œå½“å‰å›ºä»¶ä¸è¿”å›žå®Œæˆé€šçŸ¥ï¼Œæš‚ä¸å‚ä¸Žè‡ªåŠ¨éªŒæ”¶",
+    "raise_and_introduce": "该动作当前固件不返回完成通知，暂不参与自动验收",
 }
 
 
@@ -93,10 +93,10 @@ class DanceLibraryPanel(QWidget):
 
         # Toolbar
         bar = QHBoxLayout()
-        self.refresh_dances_btn = QPushButton("åˆ·æ–°èˆžè¹ˆ")
-        self.refresh_motions_btn = QPushButton("åˆ·æ–°åŠ¨ä½œ")
-        self.motion_engine_btn = QPushButton("æ‰‹åŠ¨åŠ¨ä½œåº“æ¨¡å¼")
-        self.stop_repeat_btn = QPushButton("åœæ­¢è¿žç»­åŠ¨ä½œ")
+        self.refresh_dances_btn = QPushButton("刷新舞蹈")
+        self.refresh_motions_btn = QPushButton("刷新动作")
+        self.motion_engine_btn = QPushButton("手动动作库模式")
+        self.stop_repeat_btn = QPushButton("停止连续动作")
         self.stop_repeat_btn.setEnabled(False)
         self.motion_engine_btn.setCheckable(True)
         for b in [self.refresh_dances_btn, self.refresh_motions_btn, self.motion_engine_btn, self.stop_repeat_btn]:
@@ -113,7 +113,7 @@ class DanceLibraryPanel(QWidget):
         bar.addStretch()
         layout.addLayout(bar)
 
-        self.action_status_label = QLabel("æ‰§è¡Œèˆžè¹ˆ/åŠ¨ä½œæ—¶ä¼šè‡ªåŠ¨è¿›å…¥åŠ¨ä½œåº“æ¨¡å¼ï¼Œç»“æŸåŽè‡ªåŠ¨å›žæ‹Ÿäººè¡Œèµ°æ¨¡å¼")
+        self.action_status_label = QLabel("执行舞蹈/动作时会自动进入动作库模式，结束后自动回拟人行走模式")
         self.action_status_label.setStyleSheet(
             "color: #4E5969; font-size: 12px; padding: 2px 0; border: none; background: transparent;"
         )
@@ -134,7 +134,7 @@ class DanceLibraryPanel(QWidget):
         dance_scroll.setWidgetResizable(True)
         dance_scroll.setWidget(self.dance_grid)
         dance_scroll.setStyleSheet("QScrollArea { border: none; }")
-        self.tabs.addTab(dance_scroll, "èˆžè¹ˆ (Dances)")
+        self.tabs.addTab(dance_scroll, "舞蹈 (Dances)")
 
         # Tab 2: Motions
         self.motion_grid = FlowGrid()
@@ -142,13 +142,13 @@ class DanceLibraryPanel(QWidget):
         motion_scroll.setWidgetResizable(True)
         motion_scroll.setWidget(self.motion_grid)
         motion_scroll.setStyleSheet("QScrollArea { border: none; }")
-        self.tabs.addTab(motion_scroll, "åŠ¨ä½œ (Motions)")
+        self.tabs.addTab(motion_scroll, "动作 (Motions)")
 
         # Tab 3: Walking
         walk_tab = QWidget()
         walk_layout = QVBoxLayout(walk_tab)
         walk_layout.setContentsMargins(16, 16, 16, 16)
-        for name, attr in [("å‰åŽ vx", "vx"), ("æ¨ªå‘ vy", "vy"), ("æ—‹è½¬ yaw", "yaw")]:
+        for name, attr in [("前后 vx", "vx"), ("横向 vy", "vy"), ("旋转 yaw", "yaw")]:
             row = QHBoxLayout()
             lbl = QLabel(f"{name}: 0.00")
             lbl.setStyleSheet("color: #4E5969; min-width: 80px; font-size: 12px; border: none; background: transparent;")
@@ -161,14 +161,14 @@ class DanceLibraryPanel(QWidget):
             row.addWidget(lbl)
             row.addWidget(slider)
             walk_layout.addLayout(row)
-        self.apply_walk_btn = QPushButton("åº”ç”¨é€Ÿåº¦")
+        self.apply_walk_btn = QPushButton("应用速度")
         self.apply_walk_btn.setStyleSheet(
             "QPushButton { background: #6C5CE7; color: #fff; border: none; "
             "border-radius: 6px; padding: 8px; font-weight: 700; }"
             "QPushButton:hover { background: #5A4BD1; }")
         self.apply_walk_btn.clicked.connect(self._apply_walk)
         walk_layout.addWidget(self.apply_walk_btn)
-        self.walk_status_label = QLabel("éžé›¶é€Ÿåº¦ä¼šæŒç»­å‘é€ï¼›ä¸‰è½´å½’é›¶åŽç‚¹å‡»åº”ç”¨é€Ÿåº¦å¯åœæ­¢")
+        self.walk_status_label = QLabel("非零速度会持续发送；三轴归零后点击应用速度可停止")
         self.walk_status_label.setStyleSheet(
             "color: #86909C; font-size: 12px; border: none; background: transparent;"
         )
@@ -177,7 +177,7 @@ class DanceLibraryPanel(QWidget):
         self._walk_timer.setInterval(200)
         self._walk_timer.timeout.connect(self._send_walk_velocity_once)
         walk_layout.addStretch()
-        self.tabs.addTab(walk_tab, "è¡Œèµ°")
+        self.tabs.addTab(walk_tab, "行走")
 
         # Tab 4: Sequencer
         seq_tab = QWidget()
@@ -185,7 +185,7 @@ class DanceLibraryPanel(QWidget):
         seq_layout.setContentsMargins(8, 8, 8, 8)
         self.sequencer = SequencerEditor()
         seq_layout.addWidget(self.sequencer)
-        self.tabs.addTab(seq_tab, "åºåˆ—å™¨")
+        self.tabs.addTab(seq_tab, "序列器")
 
         layout.addWidget(self.tabs)
 
@@ -221,7 +221,7 @@ class DanceLibraryPanel(QWidget):
             en = d.get("english_name", "")
             dur = d.get("duration", 0)
             count = self._service.get_count(rc, "dance")
-            card = DanceCard(cn, "dance", count, subtitle=f"{en} Â· {dur}s" if en else "")
+            card = DanceCard(cn, "dance", count, subtitle=f"{en} · {dur}s" if en else "")
             card.execute_clicked.connect(lambda n=rc: self._request_dance_execution(n))
             card.reset_clicked.connect(lambda n=rc: self._confirm_reset(n, "dance"))
             card.setEnabled(self._action_ready("execute_dance"))
@@ -265,8 +265,8 @@ class DanceLibraryPanel(QWidget):
         display_name = self._dance_cards[name].dance_name if name in self._dance_cards else name
         AppMessageBox.information(
             self,
-            "èˆžè¹ˆæµ‹è¯•å®Œæˆ",
-            f"{robot_accid}\n{display_name} å·²æµ‹è¯•åˆ°ç¬¬ {count} éã€‚",
+            "舞蹈测试完成",
+            f"{robot_accid}\n{display_name} 已测试到第 {count} 遍。",
         )
 
     def _on_motion_executed(self, name: str, count: int):
@@ -278,8 +278,8 @@ class DanceLibraryPanel(QWidget):
         display_name = card_map[name].dance_name if name in card_map else name
         answer = QMessageBox.question(
             self,
-            "æ¸…é›¶æ‰§è¡Œæ¬¡æ•°",
-            f"ç¡®å®šå°†â€œ{display_name}â€çš„æ‰§è¡Œæ¬¡æ•°æ¸…é›¶å—ï¼Ÿ",
+            "清零执行次数",
+            f"确定将“{display_name}”的执行次数清零吗？",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -295,7 +295,7 @@ class DanceLibraryPanel(QWidget):
         if running:
             self.stop_continuous_walk(reset_sliders=True, send_stop=True)
         self.action_status_label.setText(label)
-        repeat_running = label.startswith("è¿žç»­åŠ¨ä½œ")
+        repeat_running = label.startswith("连续动作")
         for card in self._dance_cards.values():
             card.setEnabled(not running and self._action_ready("execute_dance"))
         for name, card in self._motion_cards.items():
@@ -330,10 +330,10 @@ class DanceLibraryPanel(QWidget):
                 self._action_ready("execute_motion") and name not in UNRELIABLE_MOTIONS
             )
         if self._profile_key == "hu_l04_01":
-            self.action_status_label.setText("Luna L04 å•æ¬¡åŠ¨ä½œä»…åœ¨ Walk çŠ¶æ€å¼€æ”¾")
+            self.action_status_label.setText("Luna L04 单次动作仅在 Walk 状态开放")
         elif profile and not self._tool_allowed("execute_motion"):
             self.action_status_label.setText(
-                f"{profile.display_name} å½“å‰ä»…å¼€æ”¾åŠ¨ä½œä¸Žèˆžè¹ˆåˆ—è¡¨æŸ¥è¯¢"
+                f"{profile.display_name} 当前仅开放动作与舞蹈列表查询"
             )
 
     def update_robot_status(self, info: dict):
@@ -350,20 +350,20 @@ class DanceLibraryPanel(QWidget):
                 and name not in UNRELIABLE_MOTIONS
             )
         self.action_status_label.setText(
-            "Luna L04 å•æ¬¡åŠ¨ä½œå·²å°±ç»ª"
-            if ready else f"Luna L04 å½“å‰çŠ¶æ€ {self._robot_status or 'æœªçŸ¥'}ï¼Œéœ€å…ˆåˆ‡æ¢åˆ° Walk"
+            "Luna L04 单次动作已就绪"
+            if ready else f"Luna L04 当前状态 {self._robot_status or '未知'}，需先切换到 Walk"
         )
 
     def _request_dance_execution(self, rc_mapping: str):
         if (
-            self._confirm_luna_action("èˆžè¹ˆ", rc_mapping)
+            self._confirm_luna_action("舞蹈", rc_mapping)
             and self._service.authorize_next_action("dance", rc_mapping)
         ):
             self._service.execute_dance(rc_mapping)
 
     def _request_motion_execution(self, motion_name: str):
         if (
-            self._confirm_luna_action("åŽŸå­åŠ¨ä½œ", motion_name)
+            self._confirm_luna_action("原子动作", motion_name)
             and self._service.authorize_next_action("motion", motion_name)
         ):
             self._service.execute_motion(motion_name)
@@ -374,15 +374,15 @@ class DanceLibraryPanel(QWidget):
         if self._robot_status != "Walk":
             AppMessageBox.warning(
                 self,
-                "Luna åŠ¨ä½œå·²é˜»æ­¢",
-                f"å½“å‰çŠ¶æ€ä¸º {self._robot_status or 'æœªçŸ¥'}ï¼Œä»…å…è®¸åœ¨ Walk çŠ¶æ€æ‰§è¡Œã€‚",
+                "Luna 动作已阻止",
+                f"当前状态为 {self._robot_status or '未知'}，仅允许在 Walk 状态执行。",
             )
             return False
         box = AppMessageBox(
             self,
-            "ç¡®è®¤ Luna çœŸæœºåŠ¨ä½œ",
-            f"å³å°†æ‰§è¡Œ{action_type}ï¼š{name}\n\n"
-            "è¯·ç¡®è®¤æœºå™¨äººå‘¨å›´æ— äººã€æ— éšœç¢ç‰©ï¼Œæ€¥åœå¯ç”¨ï¼Œå¹¶å®‰æŽ’äººå‘˜çŽ°åœºçœ‹æŠ¤ã€‚",
+            "确认 Luna 真机动作",
+            f"即将执行{action_type}：{name}\n\n"
+            "请确认机器人周围无人、无障碍物，急停可用，并安排人员现场看护。",
             QMessageBox.Icon.Warning,
         )
         box.setStandardButtons(
@@ -392,10 +392,10 @@ class DanceLibraryPanel(QWidget):
         confirm_button = box.button(QMessageBox.StandardButton.Yes)
         cancel_button = box.button(QMessageBox.StandardButton.No)
         if confirm_button:
-            confirm_button.setText("ç¡®è®¤æ‰§è¡Œ")
+            confirm_button.setText("确认执行")
             confirm_button.setObjectName("confirmButton")
         if cancel_button:
-            cancel_button.setText("å–æ¶ˆ")
+            cancel_button.setText("取消")
         return box.exec() == QMessageBox.StandardButton.Yes
 
     def _action_ready(self, tool_name: str) -> bool:
@@ -422,14 +422,14 @@ class DanceLibraryPanel(QWidget):
         if vx == 0 and vy == 0 and yaw == 0:
             if self._walk_timer and self._walk_timer.isActive():
                 self._walk_timer.stop()
-            self.apply_walk_btn.setText("åº”ç”¨é€Ÿåº¦")
-            self.walk_status_label.setText("å·²å‘é€åœæ­¢é€Ÿåº¦")
+            self.apply_walk_btn.setText("应用速度")
+            self.walk_status_label.setText("已发送停止速度")
             return
 
         if self._walk_timer and not self._walk_timer.isActive():
             self._walk_timer.start()
-        self.apply_walk_btn.setText("æ›´æ–°æŒç»­é€Ÿåº¦")
-        self.walk_status_label.setText(f"æŒç»­å‘é€: vx={vx:.2f}, vy={vy:.2f}, yaw={yaw:.2f}")
+        self.apply_walk_btn.setText("更新持续速度")
+        self.walk_status_label.setText(f"持续发送: vx={vx:.2f}, vy={vy:.2f}, yaw={yaw:.2f}")
 
     def _send_walk_velocity_once(self):
         self._service.set_walk_velocity(
@@ -447,8 +447,8 @@ class DanceLibraryPanel(QWidget):
             self.slider_yaw.setValue(0)
         if send_stop and self._tool_allowed("set_walk_velocity"):
             self._service.set_walk_velocity(0.0, 0.0, 0.0)
-        self.apply_walk_btn.setText("åº”ç”¨é€Ÿåº¦")
-        self.walk_status_label.setText("æŒç»­è¡Œèµ°å·²åœæ­¢")
+        self.apply_walk_btn.setText("应用速度")
+        self.walk_status_label.setText("持续行走已停止")
 
     def _on_motion_engine_toggled(self, checked: bool):
         self.stop_continuous_walk(reset_sliders=True, send_stop=True)
