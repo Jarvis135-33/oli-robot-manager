@@ -136,7 +136,7 @@ def test_service_reset_keeps_cache_when_record_is_missing(monkeypatch):
     assert service.reset_count("wave", "motion") is False
     assert service.get_count("wave", "motion") == 4
     assert reset_events == []
-    assert errors == ["æœªæ‰¾åˆ° wave çš„æ‰§è¡Œæ¬¡æ•°è®°å½•"]
+    assert errors == ["未找到 wave 的执行次数记录"]
 
 
 def test_service_reset_keeps_cache_on_database_error(monkeypatch):
@@ -156,14 +156,14 @@ def test_service_reset_keeps_cache_on_database_error(monkeypatch):
     assert service.reset_count("wave", "motion") is False
     assert service.get_count("wave", "motion") == 4
     assert reset_events == []
-    assert errors == ["æ¸…é›¶ wave æ‰§è¡Œæ¬¡æ•°å¤±è´¥: write failed"]
+    assert errors == ["清零 wave 执行次数失败: write failed"]
 
 
 def test_dance_card_reset_button_is_labeled_and_emits(qtbot):
-    card = DanceCard("æŒ¥æ‰‹", "motion", count=3)
+    card = DanceCard("挥手", "motion", count=3)
     qtbot.addWidget(card)
 
-    assert card.reset_btn.text() == "æ¸…é›¶"
+    assert card.reset_btn.text() == "清零"
     assert card.reset_btn.width() == 48
     with qtbot.waitSignal(card.reset_clicked, timeout=1000):
         qtbot.mouseClick(card.reset_btn, Qt.MouseButton.LeftButton)
@@ -185,7 +185,7 @@ def test_reset_confirmation_cancel_keeps_count(qtbot, monkeypatch):
     )
     panel = DanceLibraryPanel(service)
     qtbot.addWidget(panel)
-    panel._populate_motions([{"motion_name_en": "wave", "motion_name_cn": "æŒ¥æ‰‹"}])
+    panel._populate_motions([{"motion_name_en": "wave", "motion_name_cn": "挥手"}])
 
     panel._confirm_reset("wave", "motion")
 
