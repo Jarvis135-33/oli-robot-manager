@@ -39,6 +39,17 @@ class DanceCountRepository:
         conn.close()
         return row["count"] if row else 0
 
+    def reset(self, robot_accid: str, name: str) -> bool:
+        conn = self._db.get_connection()
+        cursor = conn.execute(
+            "UPDATE dance_counts SET count = 0, last_executed = NULL "
+            "WHERE robot_accid = ? AND name = ?",
+            (robot_accid, name),
+        )
+        conn.commit()
+        conn.close()
+        return cursor.rowcount > 0
+
     def get_all_counts(self) -> list[dict]:
         conn = self._db.get_connection()
         rows = conn.execute(
