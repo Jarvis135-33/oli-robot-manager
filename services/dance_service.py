@@ -93,7 +93,7 @@ class DanceService(QObject):
 
     def load_dances(self):
         if not self._resource_context:
-            self.error_occurred.emit("æœºå™¨äººèµ„æºä¼šè¯å°šæœªå°±ç»ª")
+            self.error_occurred.emit("机器人资源会话尚未就绪")
             return
         self._mcp.call_tool(
             "get_dances", {}, self._resource_request_context("dance").to_dict(),
@@ -101,7 +101,7 @@ class DanceService(QObject):
 
     def load_motions(self):
         if not self._resource_context:
-            self.error_occurred.emit("æœºå™¨äººèµ„æºä¼šè¯å°šæœªå°±ç»ª")
+            self.error_occurred.emit("机器人资源会话尚未就绪")
             return
         self._mcp.call_tool(
             "get_motions", {}, self._resource_request_context("motion").to_dict(),
@@ -129,7 +129,7 @@ class DanceService(QObject):
         self._busy = False
         self.dance_list_loaded.emit([])
         self.motion_list_loaded.emit([])
-        self.action_state_changed.emit(False, "èµ„æºä¼šè¯å·²åˆ‡æ¢")
+        self.action_state_changed.emit(False, "资源会话已切换")
 
     def update_robot_status(self, info: dict):
         self._robot_status = str(info.get("robot_status", ""))
@@ -138,10 +138,10 @@ class DanceService(QObject):
 
     def authorize_next_action(self, action_type: str, name: str) -> bool:
         if not self._resource_context:
-            self.error_occurred.emit("æœºå™¨äººèµ„æºä¼šè¯å°šæœªå°±ç»ª")
+            self.error_occurred.emit("机器人资源会话尚未就绪")
             return False
         if action_type not in {"dance", "motion"} or not name:
-            self.error_occurred.emit("åŠ¨ä½œæŽˆæƒå‚æ•°æ— æ•ˆ")
+            self.error_occurred.emit("动作授权参数无效")
             return False
         if (
             self._resource_context.profile_key == "hu_l04_01"
@@ -162,15 +162,15 @@ class DanceService(QObject):
                 return False
             expected = (self._resource_context, action_type, name)
             if self._authorized_action != expected:
-                self.error_occurred.emit("Luna L04 å•æ¬¡åŠ¨ä½œéœ€è¦é‡æ–°ç¡®è®¤çŽ°åœºå®‰å…¨")
+                self.error_occurred.emit("Luna L04 单次动作需要重新确认现场安全")
                 return False
             self._authorized_action = None
         return True
 
     def _emit_luna_walk_error(self):
         self.error_occurred.emit(
-            f"Luna L04 å½“å‰çŠ¶æ€ {self._robot_status or 'æœªçŸ¥'}ï¼Œ"
-            "ä»…å…è®¸åœ¨ Walk çŠ¶æ€æ‰§è¡ŒåŠ¨ä½œ"
+            f"Luna L04 当前状态 {self._robot_status or '未知'}，"
+            "仅允许在 Walk 状态执行动作"
         )
 
     def _reject_luna_extended_action(self, operation: str) -> bool:
@@ -178,7 +178,7 @@ class DanceService(QObject):
             self._resource_context
             and self._resource_context.profile_key == "hu_l04_01"
         ):
-            self.error_occurred.emit(f"Luna L04 å°šæœªå¼€æ”¾{operation}")
+            self.error_occurred.emit(f"Luna L04 尚未开放{operation}")
             return True
         return False
 
@@ -198,19 +198,19 @@ class DanceService(QObject):
         if not self._action_execution_ready("dance", rc_mapping):
             return
         if self._busy and self._active_sequence is None:
-            self.error_occurred.emit("å½“å‰å·²æœ‰èˆžè¹ˆ/åŠ¨ä½œåœ¨æ‰§è¡Œï¼Œè¯·ç­‰å¾…å®ŒæˆåŽå†æ“ä½œ")
+            self.error_occurred.emit("当前已有舞蹈/动作在执行，请等待完成后再操作")
             return
         self._pending_name = rc_mapping
         self._pending_type = "dance"
         self._busy = True
-        self.action_state_changed.emit(True, f"èˆžè¹ˆæ‰§è¡Œä¸­: {rc_mapping}")
+        self.action_state_changed.emit(True, f"舞蹈执行中: {rc_mapping}")
         self._mcp.call_tool("execute_dance", {"dance_name": rc_mapping})
 
     def execute_motion(self, name: str):
         if not self._action_execution_ready("motion", name):
             return
         if self._busy and self._active_sequence is None:
-            self.error_occurred.emit("å½“å‰å·²æœ‰èˆžè¹ˆ/åŠ¨ä½œåœ¨æ‰§è¡Œï¼Œè¯·ç­‰å¾…å®ŒæˆåŽå†æ“ä½œ")
+            self.error_occurred.emit("当前已有舞蹈/动作在执行，请等待完成后再操作")
             return
         self._repeat_motion_name = ""
         self._repeat_motion_remaining = 0
@@ -219,14 +219,14 @@ class DanceService(QObject):
         self._pending_name = name
         self._pending_type = "motion"
         self._busy = True
-        self.action_state_changed.emit(True, f"åŠ¨ä½œæ‰§è¡Œä¸­: {name}")
+        self.action_state_changed.emit(True, f"动作执行中: {name}")
         self._mcp.call_tool("execute_motion", {"motion_name": name})
 
     def execute_motion_repeat(self, name: str, times: int = 5, delay_ms: int = 5000):
-        if self._reject_luna_extended_action("è¿žç»­åŠ¨ä½œ"):
+        if self._reject_luna_extended_action("连续动作"):
             return
         if self._busy:
-            self.error_occurred.emit("å½“å‰å·²æœ‰èˆžè¹ˆ/åŠ¨ä½œåœ¨æ‰§è¡Œï¼Œè¯·ç­‰å¾…å®ŒæˆåŽå†æ“ä½œ")
+            self.error_occurred.emit("当前已有舞蹈/动作在执行，请等待完成后再操作")
             return
         self._repeat_motion_name = name
         self._repeat_motion_remaining = max(0, int(times))
@@ -244,7 +244,7 @@ class DanceService(QObject):
         total = self._repeat_motion_total
         self._clear_repeat_motion()
         self._busy = False
-        self.action_state_changed.emit(False, f"è¿žç»­åŠ¨ä½œå·²åœæ­¢: {stopped_name} ({done}/{total})")
+        self.action_state_changed.emit(False, f"连续动作已停止: {stopped_name} ({done}/{total})")
 
     def _send_next_repeat_motion(self):
         if not self._repeat_motion_name:
@@ -257,7 +257,7 @@ class DanceService(QObject):
         self._pending_name = self._repeat_motion_name
         self._pending_type = "motion"
         self._repeat_motion_remaining -= 1
-        self.action_state_changed.emit(True, f"è¿žç»­åŠ¨ä½œæ‰§è¡Œä¸­: {self._repeat_motion_name} ({current}/{total})")
+        self.action_state_changed.emit(True, f"连续动作执行中: {self._repeat_motion_name} ({current}/{total})")
         self._mcp.call_tool("execute_motion", {"motion_name": self._repeat_motion_name})
 
     def _finish_repeat_motion(self):
@@ -265,7 +265,7 @@ class DanceService(QObject):
         total = self._repeat_motion_total
         self._clear_repeat_motion()
         self._busy = False
-        self.action_state_changed.emit(False, f"è¿žç»­åŠ¨ä½œå®Œæˆ: {finished_name} ({total}/{total})")
+        self.action_state_changed.emit(False, f"连续动作完成: {finished_name} ({total}/{total})")
 
     def _clear_repeat_motion(self):
         self._repeat_motion_name = ""
@@ -274,12 +274,12 @@ class DanceService(QObject):
         self._repeat_motion_done = 0
 
     def set_walk_velocity(self, x: float, y: float, yaw: float):
-        if self._reject_luna_extended_action("è¡Œèµ°æŽ§åˆ¶"):
+        if self._reject_luna_extended_action("行走控制"):
             return
         self._mcp.call_tool("set_walk_velocity", {"x": x, "y": y, "yaw": yaw})
 
     def set_motion_engine(self, mode: int = 1):
-        if self._reject_luna_extended_action("æ‰‹åŠ¨åŠ¨ä½œåº“æ¨¡å¼"):
+        if self._reject_luna_extended_action("手动动作库模式"):
             return
         self._motion_engine_request = mode
         self._mcp.call_tool("set_motion_engine", {"mode": mode})
@@ -305,10 +305,10 @@ class DanceService(QObject):
         try:
             reset_succeeded = self._count_repo.reset(robot_accid, name, category)
         except Exception as exc:
-            self.error_occurred.emit(f"æ¸…é›¶ {name} æ‰§è¡Œæ¬¡æ•°å¤±è´¥: {exc}")
+            self.error_occurred.emit(f"清零 {name} 执行次数失败: {exc}")
             return False
         if not reset_succeeded:
-            self.error_occurred.emit(f"æœªæ‰¾åˆ° {name} çš„æ‰§è¡Œæ¬¡æ•°è®°å½•")
+            self.error_occurred.emit(f"未找到 {name} 的执行次数记录")
             return False
         self._counts[(robot_accid, name, category)] = 0
         self.count_reset.emit(name, category, 0)
@@ -341,10 +341,10 @@ class DanceService(QObject):
         self._seq_repo.delete(seq_id)
 
     def execute_sequence(self, sequence: DanceSequence):
-        if self._reject_luna_extended_action("åºåˆ—å™¨"):
+        if self._reject_luna_extended_action("序列器"):
             return
         if self._busy:
-            self.error_occurred.emit("å½“å‰å·²æœ‰èˆžè¹ˆ/åŠ¨ä½œåœ¨æ‰§è¡Œï¼Œè¯·ç­‰å¾…å®ŒæˆåŽå†è¿è¡Œåºåˆ—")
+            self.error_occurred.emit("当前已有舞蹈/动作在执行，请等待完成后再运行序列")
             return
         self._active_sequence = sequence
         self._current_step_index = 0
@@ -431,7 +431,7 @@ class DanceService(QObject):
                 if count == 20:
                     self.dance_target_completed.emit(self._pending_name, count, ROBOT_CONFIG.ws_accid)
             else:
-                self.error_occurred.emit(f"èˆžè¹ˆ {self._pending_name} æ‰§è¡Œæœªå®Œæˆ: {result.get('content', ['æœªçŸ¥é”™è¯¯'])[0]}")
+                self.error_occurred.emit(f"舞蹈 {self._pending_name} 执行未完成: {result.get('content', ['未知错误'])[0]}")
                 self._active_sequence = None
             self._busy = False
             self.action_state_changed.emit(False, self._action_completion_label(result))
@@ -448,21 +448,21 @@ class DanceService(QObject):
                     if self._repeat_motion_remaining > 0:
                         self.action_state_changed.emit(
                             True,
-                            f"è¿žç»­åŠ¨ä½œç­‰å¾…ä¸­: {self._repeat_motion_name} ({self._repeat_motion_done}/{self._repeat_motion_total})ï¼Œ{self._repeat_motion_delay_ms // 1000}ç§’åŽç»§ç»­",
+                            f"连续动作等待中: {self._repeat_motion_name} ({self._repeat_motion_done}/{self._repeat_motion_total})，{self._repeat_motion_delay_ms // 1000}秒后继续",
                         )
                         QTimer.singleShot(self._repeat_motion_delay_ms, self._send_next_repeat_motion)
                     else:
                         self._finish_repeat_motion()
                     return
             else:
-                self.error_occurred.emit(f"åŠ¨ä½œ {self._pending_name} æ‰§è¡Œæœªå®Œæˆ: {result.get('content', ['æœªçŸ¥é”™è¯¯'])[0]}")
+                self.error_occurred.emit(f"动作 {self._pending_name} 执行未完成: {result.get('content', ['未知错误'])[0]}")
                 if self._repeat_motion_name:
                     failed_name = self._repeat_motion_name
                     done = self._repeat_motion_done
                     total = self._repeat_motion_total
                     self._clear_repeat_motion()
                     self._busy = False
-                    self.action_state_changed.emit(False, f"è¿žç»­åŠ¨ä½œä¸­æ­¢: {failed_name} ({done}/{total})")
+                    self.action_state_changed.emit(False, f"连续动作中止: {failed_name} ({done}/{total})")
                     return
                 self._active_sequence = None
             self._busy = False
@@ -499,7 +499,7 @@ class DanceService(QObject):
             post_action.get("exit_motion_engine") != "success"
             or post_action.get("set_walk_mode") != "success"
         ):
-            self.error_occurred.emit(f"åŠ¨ä½œå·²å®Œæˆï¼Œä½†è‡ªåŠ¨åˆ‡å›žæ‹Ÿäººè¡Œèµ°æ¨¡å¼å¤±è´¥: {post_action}")
+            self.error_occurred.emit(f"动作已完成，但自动切回拟人行走模式失败: {post_action}")
 
     def _action_completion_label(self, result: dict) -> str:
         post_action = self._action_result_data(result).get("post_action", {})
@@ -508,9 +508,9 @@ class DanceService(QObject):
                 post_action.get("exit_motion_engine") == "success"
                 and post_action.get("set_walk_mode") == "success"
             ):
-                return "å·²å›žåˆ°æ‹Ÿäººè¡Œèµ°æ¨¡å¼"
-            return "åŠ¨ä½œç»“æŸï¼Œä½†æœªç¡®è®¤æ¢å¤æ‹Ÿäººè¡Œèµ°æ¨¡å¼"
-        return "åŠ¨ä½œæ‰§è¡Œå®Œæˆ" if result.get("success") else "åŠ¨ä½œæ‰§è¡Œå·²åœæ­¢"
+                return "已回到拟人行走模式"
+            return "动作结束，但未确认恢复拟人行走模式"
+        return "动作执行完成" if result.get("success") else "动作执行已停止"
 
     @staticmethod
     def _action_result_data(result: dict) -> dict:
